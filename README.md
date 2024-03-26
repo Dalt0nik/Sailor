@@ -1,6 +1,7 @@
 # Sailor
 
 ## About
+
 "Sailor" - a financial management tool designed for investment tracking. This project provides you with the ability to monitor your investment portfolio conveniently and efficiently, depicting not only the growth chart of your stocks but also the overall progress of your account balance.
 
 ## External tools and libraries
@@ -13,3 +14,4 @@ To be chosen.
 
 ## Team
 Artiom Hovhannisyan, Evgenij Shapovalov.
+Teamname: lonely sailors
