@@ -4,7 +4,9 @@
 obj/
 bin/
 
-
+.vscode/
+secrets.txt
+pyscript.py
 # Compiled Object files
 *.slo
 *.lo
