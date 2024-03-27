@@ -9,6 +9,10 @@
 ### Stock API
 We utilize Alpha Vantage as an API to access financial data and analysis tools for our "Sailor" project.
 
+### C++ Requests: Curl for People 
+It's a simple wwrapper around libcurl library 
+https://github.com/whoshuu/cpr.git
+
 ### Chart library
 To be chosen.
 
