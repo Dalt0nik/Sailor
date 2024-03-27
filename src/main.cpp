@@ -15,7 +15,9 @@ std::string readSecrets(const std::string fileName){
     return api_key;
 }
 int main() {
+    std::cout << "Test output" << std::endl;
     std::string api_key = readSecrets("secrets.txt");
+    std::cout << "API Key: " << api_key << std::endl;
     cpr::Response r = cpr::Get(cpr::Url{"https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=BTC&to_currency=CNY&apikey=" + api_key});
 
     if (r.status_code == 200) { // OK
@@ -25,6 +27,6 @@ int main() {
     }
 
     std::cout << "Hello, World!" << std::endl;
-
+    system("pause");
     return 0;
 }

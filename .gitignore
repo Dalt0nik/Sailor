@@ -6,6 +6,7 @@ bin/
 
 .vscode/
 secrets.txt
+build/
 pyscript.py
 # Compiled Object files
 *.slo
