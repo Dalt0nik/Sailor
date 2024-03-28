@@ -4,6 +4,15 @@
 obj/
 bin/
 
+# IDE
+.vscode/
+.vs/
+
+# Build
+secrets.txt
+build/
+out/
+pyscript.py
 
 # Compiled Object files
 *.slo
