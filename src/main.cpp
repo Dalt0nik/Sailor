@@ -7,6 +7,7 @@
 
 #include "DatabaseManager.h"
 #include "TradeManager.h"
+#include <JpMorganService.h>
 
 using json = nlohmann::json;
 
@@ -44,35 +45,6 @@ std::string readSecrets(const std::string& fileName, const std::string& keyToFin
     return value;
 }
 
-// Function to get the latest available price of a stock
-double get_latest_price(const std::string& symbol, const std::string& api_key) {
-    std::string url = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=" + symbol + "&apikey=" + api_key;
-    cpr::Response r = cpr::Get(cpr::Url{ url });
-
-    if (r.status_code != 200) {
-        std::cerr << "HTTP error occurred: " << r.status_code << std::endl;
-        return -1.0;
-    }
-
-    try {
-        auto json_response = json::parse(r.text);
-        double latest_price = -1.0;
-
-        if (json_response.contains("Global Quote")) {
-            latest_price = std::stod(json_response["Global Quote"]["05. price"].get<std::string>());
-        }
-        else {
-            std::cerr << "Error parsing JSON response or no data available." << std::endl;
-        }
-
-        return latest_price;
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Exception occurred while parsing JSON: " << e.what() << std::endl;
-        return -1.0;
-    }
-}
-
 int main(int argc, char** argv) {
     std::string api_key = readSecrets("secrets.txt", "api_key");
     if(argc != 2){
@@ -84,9 +56,13 @@ int main(int argc, char** argv) {
     DatabaseManager dbManager("portfolio.db", "scripts/db-setup.sql", "scripts/mock-data.sql");
     
     TradeManager tradeManager(dbManager);
-    tradeManager.insertTradeHistory("BUY","HEGE",100,0.006,"2024-05-10");
-    float price = get_latest_price(std::string(argv[1]), api_key);
-    std::cout << price;
+    
+    JpMorganService jpMorganService(tradeManager, api_key);
+
+    std::cout << jpMorganService.buy_stock("MSFT", 50, 125, "2024-01-02");
+    std::cout << jpMorganService.sell_stock("MSFT", 25, 150, "2024-01-05");
+    std::cout << jpMorganService.get_total_ticker_value("HEGE") << std::endl;
+    std::cout << jpMorganService.get_portfolio_value() << std::endl;
 
     return 0;
 }

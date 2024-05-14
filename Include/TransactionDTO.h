@@ -12,4 +12,10 @@ struct TransactionDTO {
     std::string date;
 };
 
+struct AssetDTO {
+    std::string ticker;
+    int amount;
+    double average_price;
+};
+
 #endif // TRANSACTION_DTO_H

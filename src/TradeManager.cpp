@@ -1,5 +1,6 @@
 #include "TradeManager.h"
 #include <iostream>
+#include <sstream>
 
 TradeManager::TradeManager(DatabaseManager& dbManager) : dbManager(dbManager) {}
 
@@ -54,38 +55,39 @@ void TradeManager::updateCurrentAssets(const std::string& ticker, int amount, do
     }
 }
 
-std::vector<std::map<std::string, std::string>> TradeManager::selectAllFromCurrentAssets() {
+std::vector<AssetDTO> TradeManager::selectAllFromCurrentAssets() {
     std::string sql = "SELECT * FROM current_assets";
     sqlite3_stmt* stmt = dbManager.prepare_statement(sql);
-    std::vector<std::map<std::string, std::string>> results;
+    std::vector<AssetDTO> results;
 
     if (stmt) {
         while (sqlite3_step(stmt) == SQLITE_ROW) {
-            std::map<std::string, std::string> row;
-            int column_count = sqlite3_column_count(stmt);
-            for (int i = 0; i < column_count; i++) {
-                row[sqlite3_column_name(stmt, i)] = reinterpret_cast<const char*>(sqlite3_column_text(stmt, i));
-            }
-            results.push_back(row);
+            AssetDTO asset;
+            asset.ticker = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+            asset.amount = sqlite3_column_int(stmt, 1);
+            asset.average_price = sqlite3_column_double(stmt, 2);
+            results.push_back(asset);
         }
         sqlite3_finalize(stmt);
     }
     return results;
 }
 
-std::vector<std::map<std::string, std::string>> TradeManager::selectAllFromTradeHistory() {
+std::vector<TransactionDTO> TradeManager::selectAllFromTradeHistory() {
     std::string sql = "SELECT * FROM trade_history";
     sqlite3_stmt* stmt = dbManager.prepare_statement(sql);
-    std::vector<std::map<std::string, std::string>> results;
+    std::vector<TransactionDTO> results;
 
     if (stmt) {
         while (sqlite3_step(stmt) == SQLITE_ROW) {
-            std::map<std::string, std::string> row;
-            int column_count = sqlite3_column_count(stmt);
-            for (int i = 0; i < column_count; i++) {
-                row[sqlite3_column_name(stmt, i)] = reinterpret_cast<const char*>(sqlite3_column_text(stmt, i));
-            }
-            results.push_back(row);
+            TransactionDTO transaction;
+            transaction.id = sqlite3_column_int(stmt, 0);
+            transaction.tx_type = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+            transaction.ticker = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+            transaction.amount = sqlite3_column_int(stmt, 3);
+            transaction.price = sqlite3_column_double(stmt, 4);
+            transaction.date = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 5));
+            results.push_back(transaction);
         }
         sqlite3_finalize(stmt);
     }
