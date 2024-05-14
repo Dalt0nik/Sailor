@@ -3,11 +3,14 @@
 
 #include <cpr/cpr.h>
 #include <sqlite3.h>
+#include <nlohmann/json.hpp>
 
 #include "DatabaseManager.h"
 #include "TradeManager.h"
 
+using json = nlohmann::json;
 
+// Function to read API key from a secret
 std::string readSecrets(const std::string& fileName, const std::string& keyToFind) {
     std::ifstream secretsFile(fileName);
     std::string line;
@@ -41,10 +44,39 @@ std::string readSecrets(const std::string& fileName, const std::string& keyToFin
     return value;
 }
 
+// Function to get the latest available price of a stock
+double get_latest_price(const std::string& symbol, const std::string& api_key) {
+    std::string url = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=" + symbol + "&apikey=" + api_key;
+    cpr::Response r = cpr::Get(cpr::Url{ url });
+
+    if (r.status_code != 200) {
+        std::cerr << "HTTP error occurred: " << r.status_code << std::endl;
+        return -1.0;
+    }
+
+    try {
+        auto json_response = json::parse(r.text);
+        double latest_price = -1.0;
+
+        if (json_response.contains("Global Quote")) {
+            latest_price = std::stod(json_response["Global Quote"]["05. price"].get<std::string>());
+        }
+        else {
+            std::cerr << "Error parsing JSON response or no data available." << std::endl;
+        }
+
+        return latest_price;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Exception occurred while parsing JSON: " << e.what() << std::endl;
+        return -1.0;
+    }
+}
+
 int main(int argc, char** argv) {
     std::string api_key = readSecrets("secrets.txt", "api_key");
-    if(argc != 3){
-        std::cout << "Usage: " << argv[0] << " <from_currency> <to_currency>" << std::endl;
+    if(argc != 2){
+        std::cout << "Usage: " << argv[0] << " <Stock ticker>" << std::endl;
         return 1;
     }
     
@@ -53,16 +85,8 @@ int main(int argc, char** argv) {
     
     TradeManager tradeManager(dbManager);
     tradeManager.insertTradeHistory("BUY","HEGE",100,0.006,"2024-05-10");
-    // Send request to Alpha Vantage
-    std::string url = "https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=" + std::string(argv[1]) + "&to_currency=" + std::string(argv[2]) + "&apikey=" + api_key;
-    cpr::Response r = cpr::Get(cpr::Url{url});
-
-    // Print current rate
-    if (r.status_code == 200) { // OK
-        std::cout << r.text << std::endl;
-    } else {
-        std::cout << "HTTP error occurred: " << r.status_code << std::endl;
-    }
+    float price = get_latest_price(std::string(argv[1]), api_key);
+    std::cout << price;
 
     return 0;
 }

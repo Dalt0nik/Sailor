@@ -32,9 +32,17 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(sqlite)
 
+# FetchContent configuration for nlohmann/json
+FetchContent_Declare(
+    json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.10.5 # tag or desired version
+)
+FetchContent_MakeAvailable(json)
+
 # Add SQLite to the project
 add_library(sqlite3 STATIC ${sqlite_SOURCE_DIR}/sqlite3.c)
 target_include_directories(sqlite3 PUBLIC ${sqlite_SOURCE_DIR})
 
 # Link the libraries to the executable
-target_link_libraries(Sailor PRIVATE cpr::cpr sqlite3)
+target_link_libraries(Sailor PRIVATE cpr::cpr sqlite3 nlohmann_json::nlohmann_json)
