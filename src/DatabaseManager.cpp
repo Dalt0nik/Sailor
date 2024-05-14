@@ -50,3 +50,16 @@ void DatabaseManager::populate_database() {
     std::string sql_data = read_sql_file(data_file);
     execute_sql(sql_data);
 }
+
+sqlite3_stmt* DatabaseManager::prepare_statement(const std::string& sql) {
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, NULL) != SQLITE_OK) {
+        std::cerr << "Failed to prepare statement: " << sqlite3_errmsg(db) << std::endl;
+        return nullptr;
+    }
+    return stmt;
+}
+
+sqlite3* DatabaseManager::get_db() {
+    return db;
+}

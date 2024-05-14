@@ -5,6 +5,7 @@
 #include <sqlite3.h>
 
 #include "DatabaseManager.h"
+#include "TradeManager.h"
 
 
 std::string readSecrets(const std::string& fileName, const std::string& keyToFind) {
@@ -49,7 +50,9 @@ int main(int argc, char** argv) {
     
     // Initialize the database
     DatabaseManager dbManager("portfolio.db", "scripts/db-setup.sql", "scripts/mock-data.sql");
-
+    
+    TradeManager tradeManager(dbManager);
+    tradeManager.insertTradeHistory("BUY","HEGE",100,0.006,"2024-05-10");
     // Send request to Alpha Vantage
     std::string url = "https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=" + std::string(argv[1]) + "&to_currency=" + std::string(argv[2]) + "&apikey=" + api_key;
     cpr::Response r = cpr::Get(cpr::Url{url});
