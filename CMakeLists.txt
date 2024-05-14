@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(DEFAULT_BUILD_TYPE "Release")
 
-add_executable(Sailor src/main.cpp)
+add_executable(Sailor src/main.cpp src/DatabaseManager.cpp)
 
 if(WIN32) # Install dlls in the same directory as the executable on Windows
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -13,6 +13,7 @@ if(WIN32) # Install dlls in the same directory as the executable on Windows
 endif()
 
 include(FetchContent)
+include_directories(Include)
 
 # FetchContent configuration for cpr
 FetchContent_Declare(
