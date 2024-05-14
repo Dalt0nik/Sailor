@@ -5,7 +5,9 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(DEFAULT_BUILD_TYPE "Release")
 
-add_executable(Sailor src/main.cpp)
+file(GLOB SOURCES "src/*.cpp")
+
+add_executable(Sailor ${SOURCES})
 
 if(WIN32) # Install dlls in the same directory as the executable on Windows
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -13,8 +15,26 @@ if(WIN32) # Install dlls in the same directory as the executable on Windows
 endif()
 
 include(FetchContent)
-FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git
-                         GIT_TAG 3b15fa82ea74739b574d705fea44959b58142eb8) # Replace with your desired git commit from: https://github.com/libcpr/cpr/releases
+include_directories(Include)
+
+# FetchContent configuration for cpr
+FetchContent_Declare(
+    cpr 
+    GIT_REPOSITORY https://github.com/libcpr/cpr.git
+    GIT_TAG 3b15fa82ea74739b574d705fea44959b58142eb8 # Replace with your desired git commit from: https://github.com/libcpr/cpr/releases
+)
 FetchContent_MakeAvailable(cpr)
 
-target_link_libraries(Sailor PRIVATE cpr::cpr)
+# FetchContent configuration for SQLite
+FetchContent_Declare(
+    sqlite 
+    URL https://www.sqlite.org/2023/sqlite-amalgamation-3430000.zip # Use the latest amalgamation version URL
+)
+FetchContent_MakeAvailable(sqlite)
+
+# Add SQLite to the project
+add_library(sqlite3 STATIC ${sqlite_SOURCE_DIR}/sqlite3.c)
+target_include_directories(sqlite3 PUBLIC ${sqlite_SOURCE_DIR})
+
+# Link the libraries to the executable
+target_link_libraries(Sailor PRIVATE cpr::cpr sqlite3)

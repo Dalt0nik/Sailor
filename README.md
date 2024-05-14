@@ -19,9 +19,9 @@ To be chosen.
 ## How to build
  1. Run CMake to generate build/out directory
  2. Build executable, depending on how you utilize CMake
- 3. Create ```secrets.txt``` next to ```Sailor``` executable
+ 3. Create ```secrets.txt``` in the root of the project
  4. Generate Alpha Vantage key here: https://www.alphavantage.co/support/#api-key and put it in ```secrets.txt```
- 5. Run ```Sailor```
+ 5. Run ```Sailor``` from the root of the project
  
 ## Team
 Artiom Hovhannisyan, Evgenij Shapovalov.
