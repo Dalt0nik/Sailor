@@ -8,7 +8,7 @@ set(DEFAULT_BUILD_TYPE "Release")
 file(GLOB SOURCES "src/*.cpp")
 
 add_executable(Sailor ${SOURCES})
-
+#add_executable(Sailor src/main.cpp src/DatabaseManager.cpp src/TradeManager.cpp)
 if(WIN32) # Install dlls in the same directory as the executable on Windows
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

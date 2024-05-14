@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 
 #include "DatabaseManager.h"
+#include "TradeManager.h"
 
 using json = nlohmann::json;
 
@@ -81,7 +82,9 @@ int main(int argc, char** argv) {
     
     // Initialize the database
     DatabaseManager dbManager("portfolio.db", "scripts/db-setup.sql", "scripts/mock-data.sql");
-
+    
+    TradeManager tradeManager(dbManager);
+    tradeManager.insertTradeHistory("BUY","HEGE",100,0.006,"2024-05-10");
     float price = get_latest_price(std::string(argv[1]), api_key);
     std::cout << price;
 

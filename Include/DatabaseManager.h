@@ -12,6 +12,9 @@ public:
     void execute_sql(const std::string& sql);
     std::string read_sql_file(const std::string& file_path);
     void populate_database();
+    sqlite3_stmt* prepare_statement(const std::string& sql);
+    sqlite3* get_db();
+
 
 private:
     sqlite3* db;
