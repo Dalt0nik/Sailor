@@ -5,7 +5,9 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(DEFAULT_BUILD_TYPE "Release")
 
-add_executable(Sailor src/main.cpp src/DatabaseManager.cpp)
+file(GLOB SOURCES "src/*.cpp")
+
+add_executable(Sailor ${SOURCES})
 
 if(WIN32) # Install dlls in the same directory as the executable on Windows
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
