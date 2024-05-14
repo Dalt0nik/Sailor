@@ -1,7 +1,7 @@
-DROP TABLE IF EXISTS current_assets CASCADE;
-DROP TABLE IF EXISTS trade_history CASCADE;
+--DROP TABLE IF EXISTS current_assets CASCADE;
+--DROP TABLE IF EXISTS trade_history CASCADE;
 
-CREATE TABLE current_assets (
+CREATE TABLE IF NOT EXISTS current_assets (
     id SERIAL PRIMARY KEY,
     ticker VARCHAR(50),
     amount INT,
@@ -10,7 +10,7 @@ CREATE TABLE current_assets (
 
 -- todo: add constraints, triggers
 
-CREATE TABLE trade_history (
+CREATE TABLE IF NOT EXISTS trade_history (
     id SERIAL PRIMARY KEY,
     tx_type VARCHAR(10),
 	ticker VARCHAR(50),
