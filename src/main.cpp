@@ -55,9 +55,14 @@ int main() {
     
     JpMorganService jpMorganService(tradeManager, api_key);
 
-    std::cout << jpMorganService.buy_stock("MSFT", 50, 125, "2024-01-02");
-    std::cout << jpMorganService.sell_stock("MSFT", 25, 150, "2024-01-05");
-    std::cout << jpMorganService.get_total_ticker_value("HEGE") << std::endl;
+    std::cout << jpMorganService.buy_stock("MSFT", 50, 125, "2024-01-02")<<std::endl;
+    std::cout << jpMorganService.sell_stock("MSFT", 25, 150, "2024-01-05")<<std::endl;
+
+    std::cout << jpMorganService.buy_stock("AAPL", 60, 120, "2024-01-02")<<std::endl;
+    std::cout << jpMorganService.sell_stock("AAPL", 20, 50, "2024-01-05")<<std::endl;
+    
+    std::cout << jpMorganService.get_total_ticker_value("MSFT") << std::endl;
+    
     std::cout << jpMorganService.get_portfolio_value() << std::endl;
 
     return 0;

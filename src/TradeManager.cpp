@@ -63,9 +63,9 @@ std::vector<AssetDTO> TradeManager::selectAllFromCurrentAssets() {
     if (stmt) {
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             AssetDTO asset;
-            asset.ticker = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
-            asset.amount = sqlite3_column_int(stmt, 1);
-            asset.average_price = sqlite3_column_double(stmt, 2);
+            asset.ticker = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+            asset.amount = sqlite3_column_int(stmt, 2);
+            asset.average_price = sqlite3_column_double(stmt, 3);
             results.push_back(asset);
         }
         sqlite3_finalize(stmt);
@@ -81,7 +81,7 @@ std::vector<TransactionDTO> TradeManager::selectAllFromTradeHistory() {
     if (stmt) {
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             TransactionDTO transaction;
-            transaction.id = sqlite3_column_int(stmt, 0);
+            //transaction.id = sqlite3_column_int(stmt, 0);
             transaction.tx_type = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
             transaction.ticker = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
             transaction.amount = sqlite3_column_int(stmt, 3);
