@@ -45,35 +45,6 @@ std::string readSecrets(const std::string& fileName, const std::string& keyToFin
     return value;
 }
 
-// Function to get the latest available price of a stock
-double get_latest_price(const std::string& symbol, const std::string& api_key) {
-    std::string url = "https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=" + symbol + "&apikey=" + api_key;
-    cpr::Response r = cpr::Get(cpr::Url{ url });
-
-    if (r.status_code != 200) {
-        std::cerr << "HTTP error occurred: " << r.status_code << std::endl;
-        return -1.0;
-    }
-
-    try {
-        auto json_response = json::parse(r.text);
-        double latest_price = -1.0;
-
-        if (json_response.contains("Global Quote")) {
-            latest_price = std::stod(json_response["Global Quote"]["05. price"].get<std::string>());
-        }
-        else {
-            std::cerr << "Error parsing JSON response or no data available." << std::endl;
-        }
-
-        return latest_price;
-    }
-    catch (const std::exception& e) {
-        std::cerr << "Exception occurred while parsing JSON: " << e.what() << std::endl;
-        return -1.0;
-    }
-}
-
 void renderMenu(TradeManager &tradeManager){ //also this method should get instance of JpMorganService
     std::string options ="You have several options:\n"
                         "1)BUY a stock\n"
