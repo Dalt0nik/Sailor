@@ -73,20 +73,70 @@ double get_latest_price(const std::string& symbol, const std::string& api_key) {
     }
 }
 
+void renderMenu(TradeManager &tradeManager){ //also this method should get instance of JpMorganService
+    std::string options ="You have several options:\n"
+                        "1)BUY a stock\n"
+                        "2)SELL stock\n"
+                        "3)Check your asset value\n"
+                        "4)Check your portfolio value\n"
+                        "\'q\' to quit our application\n" ;
+
+    std::cout << "Welcome to the Sailor app! We help to multiply your money $" << std::endl;
+    while(1) {
+        std::cout << options;
+        std::cout << "Type your option" << std::endl;
+        char user_option;
+
+        std::string ticker, date;
+        int amount;
+        double price;
+        std::cin >> user_option;
+
+        //it's a mock implementation of the frontend, hence we don't validate user input
+        switch(user_option) {
+            case '1':
+                std::cout << "You choose to BUY a stock. Enter ticker, ammount, price, date (YYYY-mm-dd):" << std::endl;
+                std::cin >> ticker >> amount >> price >> date;
+
+                //** CODE GOES HERE //
+                break;
+            case '2':
+                std::cout << "You choose to SELL a stock. Enter your ticker, amount, date(YYYY-mm-dd):" << std::endl;                
+                std::cin >> ticker >> amount >> date;
+                
+                //** CODE GOES HERE //
+            
+                break;
+            case '3':
+                std::cout << "You choose to check your asset value. Enter your ticker:" << std::endl;
+                std::cin >> ticker;
+
+                //** CODE GOES HERE //
+                break;
+            case '4':
+                std::cout << "You choose to check your portfolio value" << std::endl;
+
+                //** CODE GOES HERE //
+                break;                                                
+
+        }
+
+        if(user_option == 'q'){
+            std::cout << "Goodbye, old sport." << std::endl;
+            break;
+        }
+    }
+}
+
+
 int main(int argc, char** argv) {
     std::string api_key = readSecrets("secrets.txt", "api_key");
-    if(argc != 2){
-        std::cout << "Usage: " << argv[0] << " <Stock ticker>" << std::endl;
-        return 1;
-    }
     
     // Initialize the database
     DatabaseManager dbManager("portfolio.db", "scripts/db-setup.sql", "scripts/mock-data.sql");
     
     TradeManager tradeManager(dbManager);
-    tradeManager.insertTradeHistory("BUY","HEGE",100,0.006,"2024-05-10");
-    float price = get_latest_price(std::string(argv[1]), api_key);
-    std::cout << price;
+    renderMenu(tradeManager);
 
     return 0;
 }
