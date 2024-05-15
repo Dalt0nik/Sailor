@@ -45,12 +45,8 @@ std::string readSecrets(const std::string& fileName, const std::string& keyToFin
     return value;
 }
 
-int main(int argc, char** argv) {
+int main() {
     std::string api_key = readSecrets("secrets.txt", "api_key");
-    if(argc != 2){
-        std::cout << "Usage: " << argv[0] << " <Stock ticker>" << std::endl;
-        return 1;
-    }
     
     // Initialize the database
     DatabaseManager dbManager("portfolio.db", "scripts/db-setup.sql", "scripts/mock-data.sql");

@@ -2,7 +2,8 @@
 #include <cpr/cpr.h>
 #include <nlohmann/json.hpp>
 #include <algorithm> // for std::find_if
-#include <iostream>
+#include <stdexcept> // for std::runtime_error
+#include <iostream> // for std::cerr
 
 using json = nlohmann::json;
 
@@ -17,82 +18,66 @@ int JpMorganService::buy_stock(const std::string& ticker, int amount, double pri
 
     // Fetch current assets to check if the ticker already exists
     auto currentAssets = tradeManager.selectAllFromCurrentAssets();
-    auto it = std::find_if(currentAssets.begin(), currentAssets.end(), [&ticker](const AssetDTO& asset) {
-        return asset.ticker == ticker;
-        });
-
-    if (it != currentAssets.end()) {
-        // Update current assets if ticker exists
-        int newAmount = it->amount + amount;
-        double newAveragePrice = ((it->amount * it->average_price) + (amount * price)) / newAmount;
-
-        tradeManager.updateCurrentAssets(ticker, newAmount, newAveragePrice);
-    }
-    else {
-        // Insert into current assets if ticker does not exist
-        tradeManager.insertCurrentAssets(ticker, amount, price);
+    for (auto& asset : currentAssets) {
+        if (asset.ticker == ticker) {
+            // Update current assets if ticker exists
+            int newAmount = asset.amount + amount;
+            double newAveragePrice = ((asset.amount * asset.average_price) + (amount * price)) / newAmount;
+            tradeManager.updateCurrentAssets(ticker, newAmount, newAveragePrice);
+            return 1;
+        }
     }
 
+    // Insert into current assets if ticker does not exist
+    tradeManager.insertCurrentAssets(ticker, amount, price);
     return 1;
 }
 
 int JpMorganService::sell_stock(const std::string& ticker, int amount, double price, const std::string& date) {
     // Fetch current assets to check if the ticker exists
     auto currentAssets = tradeManager.selectAllFromCurrentAssets();
-    auto it = std::find_if(currentAssets.begin(), currentAssets.end(), [&ticker](const AssetDTO& asset) {
-        return asset.ticker == ticker;
-        });
-
-    if (it != currentAssets.end()) {
-        if (it->amount < amount) {
-            std::cout << "Not enough shares to sell" << std::endl;
-            return -1;
-        }
-        else {
+    for (auto& asset : currentAssets) {
+        if (asset.ticker == ticker) {
+            if (asset.amount < amount) {
+                std::cerr << "Not enough shares to sell" << std::endl;
+                return -1;
+            }
             // Insert the trade into trade history
             tradeManager.insertTradeHistory("SELL", ticker, amount, price, date);
 
-            int newAmount = it->amount - amount;
-
+            int newAmount = asset.amount - amount;
             if (newAmount == 0) {
                 // Remove from current assets if all shares are sold
                 tradeManager.updateCurrentAssets(ticker, 0, 0);
             }
             else {
-                tradeManager.updateCurrentAssets(ticker, newAmount, it->average_price);
+                tradeManager.updateCurrentAssets(ticker, newAmount, asset.average_price);
             }
 
             return 1;
         }
     }
-    else {
-        std::cout << "Ticker not found in current assets" << std::endl;
-        return -1;
-    }
+
+    std::cerr << "Ticker not found in current assets" << std::endl;
+    return -1;
 }
 
 double JpMorganService::get_total_ticker_value(const std::string& ticker) {
     auto currentAssets = tradeManager.selectAllFromCurrentAssets();
-    auto it = std::find_if(currentAssets.begin(), currentAssets.end(), [&ticker](const AssetDTO& asset) {
-        return asset.ticker == ticker;
-        });
-
-    if (it != currentAssets.end()) {
-        return it->amount * get_latest_price(ticker);
+    for (const auto& asset : currentAssets) {
+        if (asset.ticker == ticker) {
+            return asset.amount * asset.average_price;
+        }
     }
-    else {
-        std::cout << "Ticker not found in current assets";
-    }
+    throw std::runtime_error("Ticker not found in current assets");
 }
 
 double JpMorganService::get_portfolio_value() {
     auto currentAssets = tradeManager.selectAllFromCurrentAssets();
     double total_value = 0.0;
-
     for (const auto& asset : currentAssets) {
-        total_value += get_total_ticker_value(asset.ticker);
+        total_value += asset.amount * asset.average_price;
     }
-
     return total_value;
 }
 
@@ -104,7 +89,7 @@ double JpMorganService::get_latest_price(const std::string& symbol) {
     cpr::Response r = cpr::Get(cpr::Url{ url });
 
     if (r.status_code != 200) {
-        std::cout << "HTTP error occurred: " << r.status_code << std::endl;
+        std::cerr << "HTTP error occurred: " << r.status_code << std::endl;
         return -1.0;
     }
 
@@ -116,13 +101,13 @@ double JpMorganService::get_latest_price(const std::string& symbol) {
             latest_price = std::stod(json_response["Global Quote"]["05. price"].get<std::string>());
         }
         else {
-            std::cout << "Error parsing JSON response or no data available." << std::endl;
+            std::cerr << "Error parsing JSON response or no data available." << std::endl;
         }
 
         return latest_price;
     }
     catch (const std::exception& e) {
-        std::cout << "Exception occurred while parsing JSON: " << e.what() << std::endl;
+        std::cerr << "Exception occurred while parsing JSON: " << e.what() << std::endl;
         return -1.0;
     }
 }
