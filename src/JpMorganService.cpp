@@ -66,17 +66,18 @@ double JpMorganService::get_total_ticker_value(const std::string& ticker) {
     auto currentAssets = tradeManager.selectAllFromCurrentAssets();
     for (const auto& asset : currentAssets) {
         if (asset.ticker == ticker) {
-            return asset.amount * asset.average_price;
+            return asset.amount * get_latest_price(asset.ticker);
         }
     }
-    throw std::runtime_error("Ticker not found in current assets");
+    std::cerr << "Ticker not found in current assets" << std::endl;
+    return -1;
 }
 
 double JpMorganService::get_portfolio_value() {
     auto currentAssets = tradeManager.selectAllFromCurrentAssets();
     double total_value = 0.0;
     for (const auto& asset : currentAssets) {
-        total_value += asset.amount * asset.average_price;
+        total_value += asset.amount * get_latest_price(asset.ticker);
     }
     return total_value;
 }

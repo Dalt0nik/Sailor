@@ -45,7 +45,7 @@ std::string readSecrets(const std::string& fileName, const std::string& keyToFin
     return value;
 }
 
-void renderMenu(TradeManager &tradeManager){ //also this method should get instance of JpMorganService
+void renderMenu(JpMorganService& jpMorganService){
     std::string options ="You have several options:\n"
                         "1)BUY a stock\n"
                         "2)SELL stock\n"
@@ -69,25 +69,21 @@ void renderMenu(TradeManager &tradeManager){ //also this method should get insta
             case '1':
                 std::cout << "You choose to BUY a stock. Enter ticker, ammount, price, date (YYYY-mm-dd):" << std::endl;
                 std::cin >> ticker >> amount >> price >> date;
-
-                //** CODE GOES HERE //
+                jpMorganService.buy_stock(ticker,amount,price,date);
                 break;
             case '2':
-                std::cout << "You choose to SELL a stock. Enter your ticker, amount, date(YYYY-mm-dd):" << std::endl;                
-                std::cin >> ticker >> amount >> date;
-                
-                //** CODE GOES HERE //
-            
+                std::cout << "You choose to SELL a stock. Enter your ticker, amount,price, date(YYYY-mm-dd):" << std::endl;                
+                std::cin >> ticker >> amount >> price >>date;
+                jpMorganService.sell_stock(ticker,amount,price,date);            
                 break;
             case '3':
                 std::cout << "You choose to check your asset value. Enter your ticker:" << std::endl;
                 std::cin >> ticker;
-
-                //** CODE GOES HERE //
+                std::cout <<"Your stock value: " <<jpMorganService.get_total_ticker_value(ticker)<< std::endl;
                 break;
             case '4':
                 std::cout << "You choose to check your portfolio value" << std::endl;
-
+                std::cout<<"Your portfolio value: " << jpMorganService.get_portfolio_value() << std::endl;
                 //** CODE GOES HERE //
                 break;                                                
 
@@ -108,7 +104,8 @@ int main(int argc, char** argv) {
     DatabaseManager dbManager("portfolio.db", "scripts/db-setup.sql", "scripts/mock-data.sql");
     
     TradeManager tradeManager(dbManager);
-    renderMenu(tradeManager);
+    JpMorganService jpMorganService(tradeManager, api_key);
+    renderMenu(jpMorganService);
 
     return 0;
 }
