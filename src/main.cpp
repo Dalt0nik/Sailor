@@ -54,55 +54,67 @@ std::string readSecrets(const std::string& fileName, const std::string& keyToFin
     return value;
 }
 
+struct StockOperationData {
+    char ticker[10] = "";
+    char date[11] = "YYYY-MM-DD";
+    int amount = 0;
+    double price = 0.0;
+};
+
+struct PortfolioData {
+    double total_ticker_value = 0.0;
+    double portfolio_value = 0.0;
+};
+
 void renderMenu(AssetService& assetService) {
-    static char ticker[10] = "";
-    static char date[11] = "YYYY-MM-DD";
-    static int amount = 0;
-    static double price = 0.0;
-    static double total_ticker_value = 0.0;
-    static double portfolio_value = 0.0;
+    static StockOperationData buyData;
+    static StockOperationData sellData;
+    static StockOperationData stockValueData;
+    static PortfolioData portfolioData;
 
     ImGui::Begin("Sailor App");
 
     ImGui::Text("Welcome to the Sailor app! We help to multiply your money $");
 
     if (ImGui::CollapsingHeader("Buy Stock")) {
-        ImGui::InputText("Ticker", ticker, IM_ARRAYSIZE(ticker));
-        ImGui::InputInt("Amount", &amount);
-        ImGui::InputDouble("Price", &price);
-        ImGui::InputText("Date", date, IM_ARRAYSIZE(date));
-        if (ImGui::Button("Buy")) {
-            assetService.buy_stock(ticker, amount, price, date);
+        ImGui::InputText("Ticker##buy", buyData.ticker, IM_ARRAYSIZE(buyData.ticker));
+        ImGui::InputInt("Amount##buy", &buyData.amount);
+        ImGui::InputDouble("Price##buy", &buyData.price);
+        ImGui::InputText("Date##buy", buyData.date, IM_ARRAYSIZE(buyData.date));
+        if (ImGui::Button("Buy##buy")) {
+            assetService.buy_stock(buyData.ticker, buyData.amount, buyData.price, buyData.date);
         }
     }
 
     if (ImGui::CollapsingHeader("Sell Stock")) {
-        ImGui::InputText("Ticker", ticker, IM_ARRAYSIZE(ticker));
-        ImGui::InputInt("Amount", &amount);
-        ImGui::InputDouble("Price", &price);
-        ImGui::InputText("Date", date, IM_ARRAYSIZE(date));
-        if (ImGui::Button("Sell")) {
-            assetService.sell_stock(ticker, amount, price, date);
+        ImGui::InputText("Ticker##sell", sellData.ticker, IM_ARRAYSIZE(sellData.ticker));
+        ImGui::InputInt("Amount##sell", &sellData.amount);
+        ImGui::InputDouble("Price##sell", &sellData.price);
+        ImGui::InputText("Date##sell", sellData.date, IM_ARRAYSIZE(sellData.date));
+        if (ImGui::Button("Sell##sell")) {
+            assetService.sell_stock(sellData.ticker, sellData.amount, sellData.price, sellData.date);
         }
     }
 
     if (ImGui::CollapsingHeader("Check Asset Value")) {
-        ImGui::InputText("Ticker", ticker, IM_ARRAYSIZE(ticker));
-        if (ImGui::Button("Check Value")) {
-            total_ticker_value = assetService.get_total_ticker_value(ticker);
+        ImGui::InputText("Ticker##check_asset", stockValueData.ticker, IM_ARRAYSIZE(stockValueData.ticker));
+        if (ImGui::Button("Check Value##check_asset")) {
+            portfolioData.total_ticker_value = assetService.get_total_ticker_value(stockValueData.ticker);
         }
-        ImGui::Text("Total Value: %.2f", total_ticker_value);
+        ImGui::Text("Total Value: %.2f", portfolioData.total_ticker_value);
     }
 
     if (ImGui::CollapsingHeader("Check Portfolio Value")) {
-        if (ImGui::Button("Check Portfolio Value")) {
-            portfolio_value = assetService.get_portfolio_value();
+        if (ImGui::Button("Check Portfolio Value##check_portfolio")) {
+            portfolioData.portfolio_value = assetService.get_portfolio_value();
         }
-        ImGui::Text("Portfolio Value: %.2f", portfolio_value);
+        ImGui::Text("Portfolio Value: %.2f", portfolioData.portfolio_value);
     }
 
     ImGui::End();
 }
+
+
 
 int main(int argc, char** argv) {
     // Read the API key
