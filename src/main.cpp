@@ -71,6 +71,7 @@ void renderMenu(AssetService& assetService) {
     static StockOperationData sellData;
     static StockOperationData stockValueData;
     static PortfolioData portfolioData;
+    static char statusMessage[256] = "";
 
     ImGui::Begin("Sailor App");
 
@@ -82,7 +83,13 @@ void renderMenu(AssetService& assetService) {
         ImGui::InputDouble("Price##buy", &buyData.price);
         ImGui::InputText("Date##buy", buyData.date, IM_ARRAYSIZE(buyData.date));
         if (ImGui::Button("Buy##buy")) {
-            assetService.buy_stock(buyData.ticker, buyData.amount, buyData.price, buyData.date);
+            int result = assetService.buy_stock(buyData.ticker, buyData.amount, buyData.price, buyData.date);
+            if (result == 1) {
+                snprintf(statusMessage, sizeof(statusMessage), "Buy operation successful");
+            }
+            else {
+                snprintf(statusMessage, sizeof(statusMessage), "Buy operation failed");
+            }
         }
     }
 
@@ -92,27 +99,53 @@ void renderMenu(AssetService& assetService) {
         ImGui::InputDouble("Price##sell", &sellData.price);
         ImGui::InputText("Date##sell", sellData.date, IM_ARRAYSIZE(sellData.date));
         if (ImGui::Button("Sell##sell")) {
-            assetService.sell_stock(sellData.ticker, sellData.amount, sellData.price, sellData.date);
+            int result = assetService.sell_stock(sellData.ticker, sellData.amount, sellData.price, sellData.date);
+            if (result == 1) {
+                snprintf(statusMessage, sizeof(statusMessage), "Sell operation successful");
+            }
+            else {
+                snprintf(statusMessage, sizeof(statusMessage), "Sell operation failed");
+            }
         }
     }
 
     if (ImGui::CollapsingHeader("Check Asset Value")) {
         ImGui::InputText("Ticker##check_asset", stockValueData.ticker, IM_ARRAYSIZE(stockValueData.ticker));
         if (ImGui::Button("Check Value##check_asset")) {
-            portfolioData.total_ticker_value = assetService.get_total_ticker_value(stockValueData.ticker);
+            double value = assetService.get_total_ticker_value(stockValueData.ticker);
+            if (value != -1.0) {
+                portfolioData.total_ticker_value = value;
+                snprintf(statusMessage, sizeof(statusMessage), "Check asset value successful");
+            }
+            else {
+                snprintf(statusMessage, sizeof(statusMessage), "Check asset value failed");
+            }
         }
         ImGui::Text("Total Value: %.2f", portfolioData.total_ticker_value);
     }
 
     if (ImGui::CollapsingHeader("Check Portfolio Value")) {
         if (ImGui::Button("Check Portfolio Value##check_portfolio")) {
-            portfolioData.portfolio_value = assetService.get_portfolio_value();
+            double value = assetService.get_portfolio_value();
+            if (value != -1.0) {
+                portfolioData.portfolio_value = value;
+                snprintf(statusMessage, sizeof(statusMessage), "Check portfolio value successful");
+            }
+            else {
+                snprintf(statusMessage, sizeof(statusMessage), "Check portfolio value failed");
+            }
         }
         ImGui::Text("Portfolio Value: %.2f", portfolioData.portfolio_value);
     }
 
+    // Display status message
+    if (strlen(statusMessage) > 0) {
+        ImGui::Text("%s", statusMessage);
+    }
+
     ImGui::End();
 }
+
 
 
 
