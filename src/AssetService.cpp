@@ -113,11 +113,11 @@ double AssetService::get_latest_price(const std::string& symbol) {
     }
 }
 
-double AssetService::get_all_expenses_by_ticker(const std::string &ticker, const std::string &date_from){
-    return tradeRepository.getAllExpensesByTicker(ticker, date_from);
+double AssetService::get_all_buys_from_date(const std::string &ticker, const std::string &date_from){
+    return tradeRepository.getAllBuysFromDate(ticker, date_from);
 }
-double AssetService::get_all_sells_by_ticker(const std::string &ticker, const std::string &date_from){
-    return tradeRepository.getAllSellsByTicker(ticker, date_from);
+double AssetService::get_all_sells_from_date(const std::string &ticker, const std::string &date_from){
+    return tradeRepository.getAllSellsFromDate(ticker, date_from);
 }
 std::vector<std::string> AssetService::GetAllTickers(){
     return tradeRepository.getAllTickers();
@@ -170,17 +170,21 @@ double AssetService::get_price_by_date(const std::string &ticker, const std::str
 }
 
 double AssetService::calculate_ticker_profit(const std::string &ticker, const std::string &date_from) {
-    double expenses = get_all_expenses_by_ticker(ticker, date_from);
     double existing_assets_amount = get_existing_assets_amount_by_date(ticker, date_from); //another expense
     double existing_assets_value = existing_assets_amount * get_price_by_date(ticker, date_from);
     
-    double sells = get_all_sells_by_ticker(ticker, date_from);
     
     double total_ticker_value = get_total_ticker_value(ticker);
     if (total_ticker_value == -1.0) {
         return -1.0; // Indicate error in fetching latest price
     }
-    std::cout << total_ticker_value << " : " << existing_assets_value << std::endl; 
 
-    return total_ticker_value - existing_assets_value;
+    double sells = get_all_sells_from_date(ticker, date_from);
+    double buys = get_all_buys_from_date(ticker, date_from);
+
+    if(sells || buys){
+        return -1;
+    }
+
+    return total_ticker_value - existing_assets_value + sells - buys;
 }

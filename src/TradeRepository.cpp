@@ -95,27 +95,30 @@ std::vector<TransactionDTO> TradeRepository::selectAllFromTradeHistory() {
     return results;
 }
 
-double TradeRepository::getAllExpensesByTicker(const std::string &ticker, const std::string &date_from) {
-    double totalExpenses = 0.0;
-    std::string sql = "SELECT SUM(amount * price) FROM trade_history WHERE tx_type = 'BUY' AND ticker = ?";
+double TradeRepository::getAllBuysFromDate(const std::string &ticker, const std::string &date_from) {
+    double totalBuys = 0.0;
+    std::string sql = "SELECT SUM(amount * price) FROM trade_history WHERE tx_type = 'BUY' AND ticker = ? AND date > ?";
     sqlite3_stmt* stmt = dbManager.prepare_statement(sql);
     if (stmt) {
         sqlite3_bind_text(stmt, 1, ticker.c_str(), -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 2, date_from.c_str(), -1, SQLITE_STATIC);
 
         if (sqlite3_step(stmt) == SQLITE_ROW) {
-            totalExpenses = sqlite3_column_double(stmt, 0);
+            totalBuys = sqlite3_column_double(stmt, 0);
         }
         sqlite3_finalize(stmt);
     }
-    return totalExpenses;
+    return totalBuys;
 }
 
-double TradeRepository::getAllSellsByTicker(const std::string &ticker, const std::string &date_from) {
+
+double TradeRepository::getAllSellsFromDate(const std::string &ticker, const std::string &date_from) {
     double totalSells = 0.0;
-    std::string sql = "SELECT SUM(amount * price) FROM trade_history WHERE tx_type = 'SELL' AND ticker = ?";
+    std::string sql = "SELECT SUM(amount * price) FROM trade_history WHERE tx_type = 'SELL' AND ticker = ? AND date > ?";
     sqlite3_stmt* stmt = dbManager.prepare_statement(sql);
     if (stmt) {
         sqlite3_bind_text(stmt, 1, ticker.c_str(), -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 2, date_from.c_str(), -1, SQLITE_STATIC);
 
         if (sqlite3_step(stmt) == SQLITE_ROW) {
             totalSells = sqlite3_column_double(stmt, 0);
@@ -124,6 +127,7 @@ double TradeRepository::getAllSellsByTicker(const std::string &ticker, const std
     }
     return totalSells;
 }
+
 
 double TradeRepository::getExistingAssetsValueByDate(const std::string &ticker, const std::string &date_from) {
     double totalSells = 0.0;
