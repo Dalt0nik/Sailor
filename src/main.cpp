@@ -1,13 +1,21 @@
 #include <iostream>
 #include <fstream>
-
 #include <cpr/cpr.h>
 #include <sqlite3.h>
 #include <nlohmann/json.hpp>
-
 #include "DatabaseManager.h"
 #include "TradeRepository.h"
-#include <AssetService.h>
+#include "AssetService.h"
+
+// Define GLEW_STATIC and include GLEW header
+#define GLEW_STATIC
+#include <GL/glew.h>
+
+// ImGui includes
+#include "imgui.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
+#include <GLFW/glfw3.h>
 
 using json = nlohmann::json;
 
@@ -39,73 +47,139 @@ std::string readSecrets(const std::string& fileName, const std::string& keyToFin
             }
         }
         secretsFile.close();
-    } else {
+    }
+    else {
         std::cout << "Unable to open secrets file" << std::endl;
     }
     return value;
 }
 
-void renderMenu(AssetService& assetService){
-    std::string options ="You have several options:\n"
-                        "1)BUY a stock\n"
-                        "2)SELL stock\n"
-                        "3)Check your asset value\n"
-                        "4)Check your portfolio value\n"
-                        "\'q\' to quit our application\n" ;
+void renderMenu(AssetService& assetService) {
+    static char ticker[10] = "";
+    static char date[11] = "YYYY-MM-DD";
+    static int amount = 0;
+    static double price = 0.0;
+    static double total_ticker_value = 0.0;
+    static double portfolio_value = 0.0;
 
-    std::cout << "Welcome to the Sailor app! We help to multiply your money $" << std::endl;
-    while(1) {
-        std::cout << options;
-        std::cout << "Type your option" << std::endl;
-        char user_option;
+    ImGui::Begin("Sailor App");
 
-        std::string ticker, date;
-        int amount;
-        double price;
-        std::cin >> user_option;
+    ImGui::Text("Welcome to the Sailor app! We help to multiply your money $");
 
-        //it's a mock implementation of the frontend, hence we don't validate user input
-        switch(user_option) {
-            case '1':
-                std::cout << "You choose to BUY a stock. Enter ticker, ammount, price, date (YYYY-mm-dd):" << std::endl;
-                std::cin >> ticker >> amount >> price >> date;
-                assetService.buy_stock(ticker,amount,price,date);
-                break;
-            case '2':
-                std::cout << "You choose to SELL a stock. Enter your ticker, amount,price, date(YYYY-mm-dd):" << std::endl;                
-                std::cin >> ticker >> amount >> price >>date;
-                assetService.sell_stock(ticker,amount,price,date);            
-                break;
-            case '3':
-                std::cout << "You choose to check your asset value. Enter your ticker:" << std::endl;
-                std::cin >> ticker;
-                std::cout <<"Your stock value: " <<assetService.get_total_ticker_value(ticker)<< std::endl;
-                break;
-            case '4':
-                std::cout << "You choose to check your portfolio value" << std::endl;
-                std::cout<<"Your portfolio value: " << assetService.get_portfolio_value() << std::endl;
-                //** CODE GOES HERE //
-                break;                                                
-
-        }
-
-        if(user_option == 'q'){
-            std::cout << "Goodbye, old sport." << std::endl;
-            break;
+    if (ImGui::CollapsingHeader("Buy Stock")) {
+        ImGui::InputText("Ticker", ticker, IM_ARRAYSIZE(ticker));
+        ImGui::InputInt("Amount", &amount);
+        ImGui::InputDouble("Price", &price);
+        ImGui::InputText("Date", date, IM_ARRAYSIZE(date));
+        if (ImGui::Button("Buy")) {
+            assetService.buy_stock(ticker, amount, price, date);
         }
     }
+
+    if (ImGui::CollapsingHeader("Sell Stock")) {
+        ImGui::InputText("Ticker", ticker, IM_ARRAYSIZE(ticker));
+        ImGui::InputInt("Amount", &amount);
+        ImGui::InputDouble("Price", &price);
+        ImGui::InputText("Date", date, IM_ARRAYSIZE(date));
+        if (ImGui::Button("Sell")) {
+            assetService.sell_stock(ticker, amount, price, date);
+        }
+    }
+
+    if (ImGui::CollapsingHeader("Check Asset Value")) {
+        ImGui::InputText("Ticker", ticker, IM_ARRAYSIZE(ticker));
+        if (ImGui::Button("Check Value")) {
+            total_ticker_value = assetService.get_total_ticker_value(ticker);
+        }
+        ImGui::Text("Total Value: %.2f", total_ticker_value);
+    }
+
+    if (ImGui::CollapsingHeader("Check Portfolio Value")) {
+        if (ImGui::Button("Check Portfolio Value")) {
+            portfolio_value = assetService.get_portfolio_value();
+        }
+        ImGui::Text("Portfolio Value: %.2f", portfolio_value);
+    }
+
+    ImGui::End();
 }
 
-
 int main(int argc, char** argv) {
+    // Read the API key
     std::string api_key = readSecrets("secrets.txt", "api_key");
-    
+
     // Initialize the database
     DatabaseManager dbManager("portfolio.db", "scripts/db-setup.sql", "scripts/mock-data.sql");
-    
     TradeRepository tradeRepository(dbManager);
     AssetService assetService(tradeRepository, api_key);
-    renderMenu(assetService);
+
+    // Initialize GLFW
+    if (!glfwInit()) {
+        std::cerr << "Failed to initialize GLFW" << std::endl;
+        return -1;
+    }
+
+    // Create a windowed mode window and its OpenGL context
+    GLFWwindow* window = glfwCreateWindow(1280, 720, "Sailor App", NULL, NULL);
+    if (!window) {
+        glfwTerminate();
+        return -1;
+    }
+
+    // Make the window's context current
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(1); // Enable vsync
+
+    // Initialize GLEW
+    GLenum err = glewInit();
+    if (GLEW_OK != err) {
+        std::cerr << "Failed to initialize GLEW: " << glewGetErrorString(err) << std::endl;
+        return -1;
+    }
+
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+
+    // Setup Platform/Renderer bindings
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 130");
+
+    // Main loop
+    while (!glfwWindowShouldClose(window)) {
+        // Poll and handle events (inputs, window resize, etc.)
+        glfwPollEvents();
+
+        // Start the ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        // Render the GUI
+        renderMenu(assetService);
+
+        // Rendering
+        ImGui::Render();
+        int display_w, display_h;
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glViewport(0, 0, display_w, display_h);
+        glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        glfwSwapBuffers(window);
+    }
+
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+    glfwDestroyWindow(window);
+    glfwTerminate();
 
     return 0;
 }

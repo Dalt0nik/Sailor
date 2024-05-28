@@ -1,3 +1,6 @@
+# Ignore imgui.ini
+imgui.ini
+
 # Prerequisites
 *.d
 
