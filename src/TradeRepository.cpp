@@ -95,7 +95,7 @@ std::vector<TransactionDTO> TradeRepository::selectAllFromTradeHistory() {
     return results;
 }
 
-double TradeRepository::getAllExpensesByTicker(const std::string &ticker) {
+double TradeRepository::getAllExpensesByTicker(const std::string &ticker, const std::string &date_from) {
     double totalExpenses = 0.0;
     std::string sql = "SELECT SUM(amount * price) FROM trade_history WHERE tx_type = 'BUY' AND ticker = ?";
     sqlite3_stmt* stmt = dbManager.prepare_statement(sql);
@@ -110,7 +110,7 @@ double TradeRepository::getAllExpensesByTicker(const std::string &ticker) {
     return totalExpenses;
 }
 
-double TradeRepository::getAllSellsByTicker(const std::string &ticker) {
+double TradeRepository::getAllSellsByTicker(const std::string &ticker, const std::string &date_from) {
     double totalSells = 0.0;
     std::string sql = "SELECT SUM(amount * price) FROM trade_history WHERE tx_type = 'SELL' AND ticker = ?";
     sqlite3_stmt* stmt = dbManager.prepare_statement(sql);
@@ -124,6 +124,42 @@ double TradeRepository::getAllSellsByTicker(const std::string &ticker) {
     }
     return totalSells;
 }
+
+double TradeRepository::getExistingAssetsValueByDate(const std::string &ticker, const std::string &date_from) {
+    double totalSells = 0.0;
+    double totalBuys = 0.0;
+    std::string sql = "SELECT SUM(amount) "
+                        "FROM trade_history "
+                        "WHERE tx_type = 'SELL' AND ticker = ? AND date < ?";
+    std::string sql2 = "SELECT SUM(amount) "
+                        "FROM trade_history "
+                        "WHERE tx_type = 'BUY' AND ticker = ? AND date < ?";
+
+    sqlite3_stmt* stmtSell = dbManager.prepare_statement(sql);
+    sqlite3_stmt* stmtBuy = dbManager.prepare_statement(sql2);
+
+    if (stmtSell) {
+        sqlite3_bind_text(stmtSell, 1, ticker.c_str(), -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmtSell, 2, date_from.c_str(), -1, SQLITE_STATIC);
+
+
+        if (sqlite3_step(stmtSell) == SQLITE_ROW) {
+            totalSells = sqlite3_column_double(stmtSell, 0);
+        }
+        sqlite3_finalize(stmtSell);
+    }
+    if (stmtBuy) {
+        sqlite3_bind_text(stmtBuy, 1, ticker.c_str(), -1, SQLITE_STATIC);
+        sqlite3_bind_text(stmtBuy, 2, date_from.c_str(), -1, SQLITE_STATIC);
+
+        if (sqlite3_step(stmtBuy) == SQLITE_ROW) {
+            totalBuys = sqlite3_column_double(stmtBuy, 0);
+        }
+        sqlite3_finalize(stmtBuy);
+    }
+    return totalBuys - totalSells;
+}
+
 
 std::vector<std::string> TradeRepository::getAllTickers() {
     std::vector<std::string> tickers;

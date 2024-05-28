@@ -156,8 +156,12 @@ void renderMenu(AssetService& assetService) {
 
     if (ImGui::CollapsingHeader("Calculate Ticker Profit")) {
         ImGui::InputText("Ticker##profit", profitData.ticker, IM_ARRAYSIZE(profitData.ticker));
+        if (ImGui::DateChooser("##buy_date", profitData.date)) {
+            // Date selection
+        }
         if (ImGui::Button("Calculate Profit##profit")) {
-            double profit = assetService.calculate_ticker_profit(profitData.ticker);
+            std::string dateStr = formatDate(profitData.date);
+            double profit = assetService.calculate_ticker_profit(profitData.ticker,dateStr);
             if (profit != -1.0) {
                 snprintf(statusMessage, sizeof(statusMessage), "Profit for %s: %.2f", profitData.ticker, profit);
             } else {

@@ -113,24 +113,74 @@ double AssetService::get_latest_price(const std::string& symbol) {
     }
 }
 
-double AssetService::get_all_expenses_by_ticker(const std::string &ticker){
-    return tradeRepository.getAllExpensesByTicker(ticker);
+double AssetService::get_all_expenses_by_ticker(const std::string &ticker, const std::string &date_from){
+    return tradeRepository.getAllExpensesByTicker(ticker, date_from);
 }
-double AssetService::get_all_sells_by_ticker(const std::string &ticker){
-    return tradeRepository.getAllSellsByTicker(ticker);
+double AssetService::get_all_sells_by_ticker(const std::string &ticker, const std::string &date_from){
+    return tradeRepository.getAllSellsByTicker(ticker, date_from);
 }
 std::vector<std::string> AssetService::GetAllTickers(){
     return tradeRepository.getAllTickers();
 }
+double AssetService::get_existing_assets_amount_by_date(const std::string &ticker, const std::string &date_from){
+    return tradeRepository.getExistingAssetsValueByDate(ticker, date_from);
+}
 
-double AssetService::calculate_ticker_profit(const std::string& ticker) {
-    double expenses = get_all_expenses_by_ticker(ticker);
-    double sells = get_all_sells_by_ticker(ticker);
-    double latest_price = get_latest_price(ticker);
+double AssetService::get_price_by_date(const std::string &ticker, const std::string &date) {
+    std::string url = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=" + ticker + "&interval=60min&apikey=" + this->api_key + "&month=" + date.substr(0, 7);
+    cpr::Response r = cpr::Get(cpr::Url{ url });
 
-    if (latest_price == -1.0) {
-        return -1.0; // Indicate error in fetching latest price
+    if (r.status_code != 200) {
+        std::cerr << "HTTP error occurred: " << r.status_code << std::endl;
+        return -1.0;
     }
 
-    return (sells + latest_price) - expenses;
+    try {
+        auto json_response = json::parse(r.text);
+        std::string latest_timestamp;
+        double closing_price = -1.0;
+
+        if (json_response.contains("Time Series (60min)")) {
+            auto time_series = json_response["Time Series (60min)"];
+
+            for (auto it = time_series.begin(); it != time_series.end(); ++it) {
+                std::string timestamp = it.key();
+                if (timestamp.substr(0, 10) == date) {
+                    if (latest_timestamp.empty() || timestamp > latest_timestamp) {
+                        latest_timestamp = timestamp;
+                        closing_price = std::stod(it.value()["4. close"].get<std::string>());
+                    }
+                }
+            }
+
+            if (!latest_timestamp.empty()) {
+                return closing_price;
+            } else {
+                std::cerr << "No data available for the specified date: " << date << std::endl;
+                return -1.0;
+            }
+        } else {
+            std::cerr << "Error parsing JSON response or no data available." << std::endl;
+            return -1.0;
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Exception occurred while parsing JSON: " << e.what() << std::endl;
+        return -1.0;
+    }
+}
+
+double AssetService::calculate_ticker_profit(const std::string &ticker, const std::string &date_from) {
+    double expenses = get_all_expenses_by_ticker(ticker, date_from);
+    double existing_assets_amount = get_existing_assets_amount_by_date(ticker, date_from); //another expense
+    double existing_assets_value = existing_assets_amount * get_price_by_date(ticker, date_from);
+    
+    double sells = get_all_sells_by_ticker(ticker, date_from);
+    
+    double total_ticker_value = get_total_ticker_value(ticker);
+    if (total_ticker_value == -1.0) {
+        return -1.0; // Indicate error in fetching latest price
+    }
+    std::cout << total_ticker_value << " : " << existing_assets_value << std::endl; 
+
+    return total_ticker_value - existing_assets_value;
 }
