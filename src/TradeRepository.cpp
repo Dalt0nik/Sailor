@@ -1,6 +1,7 @@
 #include "TradeRepository.h"
 #include <iostream>
 #include <sstream>
+#include <vector>
 
 TradeRepository::TradeRepository(DatabaseManager& dbManager) : dbManager(dbManager) {}
 
@@ -92,4 +93,49 @@ std::vector<TransactionDTO> TradeRepository::selectAllFromTradeHistory() {
         sqlite3_finalize(stmt);
     }
     return results;
+}
+
+double TradeRepository::getAllExpensesByTicker(const std::string &ticker) {
+    double totalExpenses = 0.0;
+    std::string sql = "SELECT SUM(amount * price) FROM trade_history WHERE tx_type = 'BUY' AND ticker = ?";
+    sqlite3_stmt* stmt = dbManager.prepare_statement(sql);
+    if (stmt) {
+        sqlite3_bind_text(stmt, 1, ticker.c_str(), -1, SQLITE_STATIC);
+
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            totalExpenses = sqlite3_column_double(stmt, 0);
+        }
+        sqlite3_finalize(stmt);
+    }
+    return totalExpenses;
+}
+
+double TradeRepository::getAllSellsByTicker(const std::string &ticker) {
+    double totalSells = 0.0;
+    std::string sql = "SELECT SUM(amount * price) FROM trade_history WHERE tx_type = 'SELL' AND ticker = ?";
+    sqlite3_stmt* stmt = dbManager.prepare_statement(sql);
+    if (stmt) {
+        sqlite3_bind_text(stmt, 1, ticker.c_str(), -1, SQLITE_STATIC);
+
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            totalSells = sqlite3_column_double(stmt, 0);
+        }
+        sqlite3_finalize(stmt);
+    }
+    return totalSells;
+}
+
+std::vector<std::string> TradeRepository::getAllTickers() {
+    std::vector<std::string> tickers;
+    std::string sql = "SELECT DISTINCT ticker FROM trade_history";
+    sqlite3_stmt* stmt = dbManager.prepare_statement(sql);
+
+    if (stmt) {
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            std::string ticker = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+            tickers.push_back(ticker);
+        }
+        sqlite3_finalize(stmt);
+    }
+    return tickers;
 }

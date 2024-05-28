@@ -17,6 +17,10 @@ public:
     std::vector<AssetDTO> selectAllFromCurrentAssets();
     std::vector<TransactionDTO> selectAllFromTradeHistory();
 
+    double getAllExpensesByTicker(const std::string &ticker);
+    double getAllSellsByTicker(const std::string &ticker);
+    std::vector<std::string> getAllTickers();
+
 private:
     DatabaseManager& dbManager;
 };

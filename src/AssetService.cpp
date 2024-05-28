@@ -112,3 +112,13 @@ double AssetService::get_latest_price(const std::string& symbol) {
         return -1.0;
     }
 }
+
+double AssetService::get_all_expenses_by_ticker(const std::string &ticker){
+    return tradeRepository.getAllExpensesByTicker(ticker);
+}
+double AssetService::get_all_sells_by_ticker(const std::string &ticker){
+    return tradeRepository.getAllSellsByTicker(ticker);
+}
+std::vector<std::string> AssetService::GetAllTickers(){
+    return tradeRepository.getAllTickers();
+}
