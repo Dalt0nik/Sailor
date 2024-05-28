@@ -70,8 +70,11 @@ void renderMenu(AssetService& assetService) {
     static StockOperationData buyData;
     static StockOperationData sellData;
     static StockOperationData stockValueData;
+    static StockOperationData profitData;
     static PortfolioData portfolioData;
     static char statusMessage[256] = "";
+    static std::vector<std::string> tickers;
+
 
     ImGui::Begin("Sailor App");
 
@@ -86,8 +89,7 @@ void renderMenu(AssetService& assetService) {
             int result = assetService.buy_stock(buyData.ticker, buyData.amount, buyData.price, buyData.date);
             if (result == 1) {
                 snprintf(statusMessage, sizeof(statusMessage), "Buy operation successful");
-            }
-            else {
+            } else {
                 snprintf(statusMessage, sizeof(statusMessage), "Buy operation failed");
             }
         }
@@ -102,8 +104,7 @@ void renderMenu(AssetService& assetService) {
             int result = assetService.sell_stock(sellData.ticker, sellData.amount, sellData.price, sellData.date);
             if (result == 1) {
                 snprintf(statusMessage, sizeof(statusMessage), "Sell operation successful");
-            }
-            else {
+            } else {
                 snprintf(statusMessage, sizeof(statusMessage), "Sell operation failed");
             }
         }
@@ -116,8 +117,7 @@ void renderMenu(AssetService& assetService) {
             if (value != -1.0) {
                 portfolioData.total_ticker_value = value;
                 snprintf(statusMessage, sizeof(statusMessage), "Check asset value successful");
-            }
-            else {
+            } else {
                 snprintf(statusMessage, sizeof(statusMessage), "Check asset value failed");
             }
         }
@@ -130,12 +130,34 @@ void renderMenu(AssetService& assetService) {
             if (value != -1.0) {
                 portfolioData.portfolio_value = value;
                 snprintf(statusMessage, sizeof(statusMessage), "Check portfolio value successful");
-            }
-            else {
+            } else {
                 snprintf(statusMessage, sizeof(statusMessage), "Check portfolio value failed");
             }
         }
         ImGui::Text("Portfolio Value: %.2f", portfolioData.portfolio_value);
+    }
+
+    if (ImGui::CollapsingHeader("Calculate Ticker Profit")) {
+        ImGui::InputText("Ticker##profit", profitData.ticker, IM_ARRAYSIZE(profitData.ticker));
+        if (ImGui::Button("Calculate Profit##profit")) {
+            double profit = assetService.calculate_ticker_profit(profitData.ticker);
+            if (profit != -1.0) {
+                snprintf(statusMessage, sizeof(statusMessage), "Profit for %s: %.2f", profitData.ticker, profit);
+            } else {
+                snprintf(statusMessage, sizeof(statusMessage), "Failed to calculate profit for %s", profitData.ticker);
+            }
+        }
+    }
+    if (ImGui::CollapsingHeader("Get All Ticker Names")) {
+        if (ImGui::Button("Get All Tickers##get_all_tickers")) {
+            tickers = assetService.GetAllTickers();
+            snprintf(statusMessage, sizeof(statusMessage), "Retrieved all tickers");
+        }
+
+        ImGui::Text("Tickers:");
+        for (const auto& ticker : tickers) {
+            ImGui::BulletText("%s", ticker.c_str());
+        }
     }
 
     // Display status message

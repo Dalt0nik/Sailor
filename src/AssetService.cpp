@@ -122,3 +122,15 @@ double AssetService::get_all_sells_by_ticker(const std::string &ticker){
 std::vector<std::string> AssetService::GetAllTickers(){
     return tradeRepository.getAllTickers();
 }
+
+double AssetService::calculate_ticker_profit(const std::string& ticker) {
+    double expenses = get_all_expenses_by_ticker(ticker);
+    double sells = get_all_sells_by_ticker(ticker);
+    double latest_price = get_latest_price(ticker);
+
+    if (latest_price == -1.0) {
+        return -1.0; // Indicate error in fetching latest price
+    }
+
+    return (sells + latest_price) - expenses;
+}
