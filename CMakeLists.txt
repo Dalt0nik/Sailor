@@ -39,13 +39,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(json)
 
-# FetchContent configuration for ImGui
+# FetchContent configuration for ImGui with addons
 FetchContent_Declare(
-    imgui
-    GIT_REPOSITORY https://github.com/ocornut/imgui.git
-    GIT_TAG v1.89.1 # Replace with the latest stable version or the version you want to use
+    imgui_addons
+    GIT_REPOSITORY https://github.com/Flix01/imgui.git
+    GIT_TAG c2dd0c9d58fdd6f6e6d3cad58d8e0e80ca9aebf0 # Replace with the specific branch or commit
 )
-FetchContent_MakeAvailable(imgui)
+FetchContent_MakeAvailable(imgui_addons)
 
 # FetchContent configuration for GLFW
 FetchContent_Declare(
@@ -73,20 +73,24 @@ target_include_directories(sqlite3 PUBLIC ${sqlite_SOURCE_DIR})
 
 # Add ImGui and its backends to the project
 add_library(imgui STATIC 
-    ${imgui_SOURCE_DIR}/imgui.cpp
-    ${imgui_SOURCE_DIR}/imgui_draw.cpp
-    ${imgui_SOURCE_DIR}/imgui_tables.cpp
-    ${imgui_SOURCE_DIR}/imgui_widgets.cpp
-    ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
-    ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+    ${imgui_addons_SOURCE_DIR}/imgui.cpp
+    ${imgui_addons_SOURCE_DIR}/imgui_draw.cpp
+    ${imgui_addons_SOURCE_DIR}/imgui_tables.cpp
+    ${imgui_addons_SOURCE_DIR}/imgui_widgets.cpp
+    ${imgui_addons_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+    ${imgui_addons_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
 )
-target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends)
+target_include_directories(imgui PUBLIC ${imgui_addons_SOURCE_DIR} ${imgui_addons_SOURCE_DIR}/backends)
 
 # Ensure GLFW include directories are added
 include_directories(${glfw_SOURCE_DIR}/include)
 
+# Add ImGuiDateChooser addon to the project
+add_library(imgui_datechooser STATIC ${imgui_addons_SOURCE_DIR}/addons/imguidatechooser/imguidatechooser.cpp)
+target_include_directories(imgui_datechooser PUBLIC ${imgui_addons_SOURCE_DIR}/addons/imguidatechooser ${imgui_addons_SOURCE_DIR})
+
 # Link the libraries to the executable
-target_link_libraries(Sailor PRIVATE cpr::cpr sqlite3 nlohmann_json::nlohmann_json imgui glfw glew)
+target_link_libraries(Sailor PRIVATE cpr::cpr sqlite3 nlohmann_json::nlohmann_json imgui glfw glew imgui_datechooser)
 
 # Link OpenGL (you might need to adjust this depending on your platform)
 if (WIN32)

@@ -17,6 +17,9 @@
 #include "backends/imgui_impl_opengl3.h"
 #include <GLFW/glfw3.h>
 
+// ImGuiDateChooser includes
+#include "addons/imguidatechooser/imguidatechooser.h"
+
 using json = nlohmann::json;
 
 // Function to read API key from a secret
@@ -56,7 +59,7 @@ std::string readSecrets(const std::string& fileName, const std::string& keyToFin
 
 struct StockOperationData {
     char ticker[10] = "";
-    char date[11] = "YYYY-MM-DD";
+    tm date = {};
     int amount = 0;
     double price = 0.0;
 };
@@ -65,6 +68,12 @@ struct PortfolioData {
     double total_ticker_value = 0.0;
     double portfolio_value = 0.0;
 };
+
+std::string formatDate(const tm& date) {
+    char buffer[11];
+    std::strftime(buffer, sizeof(buffer), "%Y-%m-%d", &date);
+    return std::string(buffer);
+}
 
 void renderMenu(AssetService& assetService) {
     static StockOperationData buyData;
@@ -81,9 +90,13 @@ void renderMenu(AssetService& assetService) {
         ImGui::InputText("Ticker##buy", buyData.ticker, IM_ARRAYSIZE(buyData.ticker));
         ImGui::InputInt("Amount##buy", &buyData.amount);
         ImGui::InputDouble("Price##buy", &buyData.price);
-        ImGui::InputText("Date##buy", buyData.date, IM_ARRAYSIZE(buyData.date));
+        ImGui::Text("Date:");
+        if (ImGui::DateChooser("##buy_date", buyData.date)) {
+            // Date selection
+        }
         if (ImGui::Button("Buy##buy")) {
-            int result = assetService.buy_stock(buyData.ticker, buyData.amount, buyData.price, buyData.date);
+            std::string dateStr = formatDate(buyData.date);
+            int result = assetService.buy_stock(buyData.ticker, buyData.amount, buyData.price, dateStr);
             if (result == 1) {
                 snprintf(statusMessage, sizeof(statusMessage), "Buy operation successful");
             }
@@ -97,9 +110,13 @@ void renderMenu(AssetService& assetService) {
         ImGui::InputText("Ticker##sell", sellData.ticker, IM_ARRAYSIZE(sellData.ticker));
         ImGui::InputInt("Amount##sell", &sellData.amount);
         ImGui::InputDouble("Price##sell", &sellData.price);
-        ImGui::InputText("Date##sell", sellData.date, IM_ARRAYSIZE(sellData.date));
+        ImGui::Text("Date:");
+        if (ImGui::DateChooser("##sell_date", sellData.date)) {
+            // Date selection
+        }
         if (ImGui::Button("Sell##sell")) {
-            int result = assetService.sell_stock(sellData.ticker, sellData.amount, sellData.price, sellData.date);
+            std::string dateStr = formatDate(sellData.date);
+            int result = assetService.sell_stock(sellData.ticker, sellData.amount, sellData.price, dateStr);
             if (result == 1) {
                 snprintf(statusMessage, sizeof(statusMessage), "Sell operation successful");
             }
@@ -145,9 +162,6 @@ void renderMenu(AssetService& assetService) {
 
     ImGui::End();
 }
-
-
-
 
 int main(int argc, char** argv) {
     // Read the API key
