@@ -1,12 +1,12 @@
 #pragma once
 
-#include "TradeManager.h"
+#include "TradeRepository.h"
 #include <string>
 
-class JpMorganService {
+class AssetService {
 public:
-    JpMorganService(TradeManager& tradeManager, const std::string& api_key);
-    ~JpMorganService();
+    AssetService(TradeRepository& tradeRepository, const std::string& api_key);
+    ~AssetService();
 
     int buy_stock(const std::string& ticker, int amount, double price, const std::string& date);
     int sell_stock(const std::string& ticker, int amount, double price, const std::string& date);
@@ -14,6 +14,6 @@ public:
     double get_portfolio_value();
 private:
     double get_latest_price(const std::string& symbol);
-    TradeManager& tradeManager;
+    TradeRepository& tradeRepository;
     std::string api_key;
 };

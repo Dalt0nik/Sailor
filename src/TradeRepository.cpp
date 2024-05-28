@@ -1,12 +1,12 @@
-#include "TradeManager.h"
+#include "TradeRepository.h"
 #include <iostream>
 #include <sstream>
 
-TradeManager::TradeManager(DatabaseManager& dbManager) : dbManager(dbManager) {}
+TradeRepository::TradeRepository(DatabaseManager& dbManager) : dbManager(dbManager) {}
 
-TradeManager::~TradeManager() {}
+TradeRepository::~TradeRepository() {}
 
-void TradeManager::insertTradeHistory(const std::string& tx_type, const std::string& ticker, int amount, double price, const std::string& date) {
+void TradeRepository::insertTradeHistory(const std::string& tx_type, const std::string& ticker, int amount, double price, const std::string& date) {
     std::string sql = "INSERT INTO trade_history (tx_type, ticker, amount, price, date) VALUES (?, ?, ?, ?, ?)";
     sqlite3_stmt* stmt = dbManager.prepare_statement(sql);
     if (stmt) {
@@ -23,7 +23,7 @@ void TradeManager::insertTradeHistory(const std::string& tx_type, const std::str
         sqlite3_finalize(stmt);
     }
 }
-void TradeManager::insertCurrentAssets(const std::string& ticker, int amount, double average_price) {
+void TradeRepository::insertCurrentAssets(const std::string& ticker, int amount, double average_price) {
     std::string sql = "INSERT INTO current_assets (ticker, amount, average_price) VALUES (?, ?, ?)";
     sqlite3_stmt* stmt = dbManager.prepare_statement(sql);
     if (stmt) {
@@ -39,7 +39,7 @@ void TradeManager::insertCurrentAssets(const std::string& ticker, int amount, do
     }
 }
 
-void TradeManager::updateCurrentAssets(const std::string& ticker, int amount, double average_price) {
+void TradeRepository::updateCurrentAssets(const std::string& ticker, int amount, double average_price) {
     std::string sql = "UPDATE current_assets SET amount = ?, average_price = ? WHERE ticker = ?";
     sqlite3_stmt* stmt = dbManager.prepare_statement(sql);
     if (stmt) {
@@ -55,7 +55,7 @@ void TradeManager::updateCurrentAssets(const std::string& ticker, int amount, do
     }
 }
 
-std::vector<AssetDTO> TradeManager::selectAllFromCurrentAssets() {
+std::vector<AssetDTO> TradeRepository::selectAllFromCurrentAssets() {
     std::string sql = "SELECT * FROM current_assets";
     sqlite3_stmt* stmt = dbManager.prepare_statement(sql);
     std::vector<AssetDTO> results;
@@ -73,7 +73,7 @@ std::vector<AssetDTO> TradeManager::selectAllFromCurrentAssets() {
     return results;
 }
 
-std::vector<TransactionDTO> TradeManager::selectAllFromTradeHistory() {
+std::vector<TransactionDTO> TradeRepository::selectAllFromTradeHistory() {
     std::string sql = "SELECT * FROM trade_history";
     sqlite3_stmt* stmt = dbManager.prepare_statement(sql);
     std::vector<TransactionDTO> results;

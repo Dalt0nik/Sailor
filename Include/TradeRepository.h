@@ -6,10 +6,10 @@
 #include <string>
 #include <vector>
 
-class TradeManager {
+class TradeRepository {
 public:
-    TradeManager(DatabaseManager& dbManager);
-    ~TradeManager();
+    TradeRepository(DatabaseManager& dbManager);
+    ~TradeRepository();
 
     void insertTradeHistory(const std::string& tx_type, const std::string& ticker, int amount, double price, const std::string& date);
     void insertCurrentAssets(const std::string& ticker, int amount, double average_price);
