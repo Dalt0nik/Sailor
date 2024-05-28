@@ -127,7 +127,7 @@ double AssetService::get_existing_assets_amount_by_date(const std::string &ticke
 }
 
 double AssetService::get_price_by_date(const std::string &ticker, const std::string &date) {
-    std::string url = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=" + ticker + "&interval=60min&apikey=" + this->api_key + "&month=" + date.substr(0, 7);
+    std::string url = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=" + ticker + "&outputsize=full&interval=60min&apikey=" + this->api_key + "&month=" + date.substr(0, 7);
     cpr::Response r = cpr::Get(cpr::Url{ url });
 
     if (r.status_code != 200) {
@@ -145,7 +145,7 @@ double AssetService::get_price_by_date(const std::string &ticker, const std::str
 
             for (auto it = time_series.begin(); it != time_series.end(); ++it) {
                 std::string timestamp = it.key();
-                if (timestamp.substr(0, 10) == date) {
+                if (timestamp.substr(0, 10) == date && timestamp.substr(11, 13) == "19") {
                     if (latest_timestamp.empty() || timestamp > latest_timestamp) {
                         latest_timestamp = timestamp;
                         closing_price = std::stod(it.value()["4. close"].get<std::string>());
