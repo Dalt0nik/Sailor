@@ -17,7 +17,8 @@ public:
     double get_all_buys_from_date(const std::string &ticker, const std::string &date_from); // we can do these functions private
     double get_all_sells_from_date(const std::string &ticker, const std::string &date_from);    // and create get_zarabotok method
     std::vector<std::string> GetAllTickers();
-    double calculate_ticker_profit(const std::string &ticker, const std::string &date_from);
+    double calculate_ticker_income(const std::string &ticker, const std::string &date_from);
+    double calculate_ticker_expense(const std::string& ticker, const std::string& date_from);
     double get_existing_assets_amount_by_date(const std::string &ticker, const std::string &date_from);
     double get_price_by_date(const std:: string &ticker, const std::string &date);
 private:

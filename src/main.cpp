@@ -161,9 +161,13 @@ void renderMenu(AssetService& assetService) {
         }
         if (ImGui::Button("Calculate Profit##profit")) {
             std::string dateStr = formatDate(profitData.date);
-            double profit = assetService.calculate_ticker_profit(profitData.ticker,dateStr);
-            if (profit != -1.0) {
-                snprintf(statusMessage, sizeof(statusMessage), "Profit for %s: %.2f", profitData.ticker, profit);
+            double expenses = assetService.calculate_ticker_expense(profitData.ticker, dateStr);
+            double income = assetService.calculate_ticker_income(profitData.ticker, dateStr);
+  
+            if (expenses != -1.0 && income != -1.0) {
+                double profit = income - expenses;
+                double profitP = (profit / expenses) * 100;
+                snprintf(statusMessage, sizeof(statusMessage), "Profit for %s: %.2f (%.2f%%)", profitData.ticker, profit, profitP);
             } else {
                 snprintf(statusMessage, sizeof(statusMessage), "Failed to calculate profit for %s", profitData.ticker);
             }

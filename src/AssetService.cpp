@@ -177,22 +177,31 @@ double AssetService::get_price_by_date(const std::string &ticker, const std::str
     }
 }
 
-double AssetService::calculate_ticker_profit(const std::string &ticker, const std::string &date_from) {
-    double existing_assets_amount = get_existing_assets_amount_by_date(ticker, date_from); //another expense
-    double existing_assets_value = existing_assets_amount * get_price_by_date(ticker, date_from);
-    
-    
-    double total_ticker_value = get_total_ticker_value(ticker);
+double AssetService::calculate_ticker_income(const std::string &ticker, const std::string &date_from) {
+
+        double total_ticker_value = get_total_ticker_value(ticker);
     if (total_ticker_value == -1.0) {
         total_ticker_value = 0;
     }
 
     double sells = get_all_sells_from_date(ticker, date_from);
-    double buys = get_all_buys_from_date(ticker, date_from);
 
-    if(sells == -1|| buys == -1){
+    if(sells == -1){
         return -1;
     }
 
-    return total_ticker_value - existing_assets_value + sells - buys;
+    return total_ticker_value + sells;
+}
+
+double AssetService::calculate_ticker_expense(const std::string& ticker, const std::string& date_from) {
+    double existing_assets_amount = get_existing_assets_amount_by_date(ticker, date_from); //another expense
+    double existing_assets_value = existing_assets_amount * get_price_by_date(ticker, date_from);
+
+    double buys = get_all_buys_from_date(ticker, date_from);
+
+    if (buys == -1) {
+        return -1;
+    }
+
+    return existing_assets_value + buys;
 }
