@@ -13,9 +13,6 @@ We utilize Alpha Vantage as an API to access financial data and analysis tools f
 It's a simple wrapper around libcurl library 
 https://github.com/whoshuu/cpr.git
 
-### Chart library
-To be chosen.
-
 ## How to build
  1. Run CMake to generate build/out directory
  2. Build executable, depending on how you utilize CMake
